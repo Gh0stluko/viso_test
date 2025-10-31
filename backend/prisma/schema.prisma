@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Модель користувача
+model User {
+  id  Int @id @default(autoincrement())
+  email String @unique
+  password String
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  recipes Recipe[]
+  ratings Rating[]
+}
+
+/// Модель рецепта
+model Recipe {
+  id Int @id @default(autoincrement())
+  title String
+  ingredients String
+  instructions String
+  imageUrl String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId Int
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  ratings Rating[]
+  photos Photo[]
+}
+
+/// Модель фото рецепта
+model Photo {
+  id Int @id @default(autoincrement())
+  url String
+  createdAt DateTime @default(now())
+
+  recipeId Int
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+/// Модель оцінки рецепта користувачем
+model Rating {
+  id Int @id @default(autoincrement())
+  score Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  userId Int
+  recipeId Int
+
+  @@unique([userId, recipeId])
+}
+
